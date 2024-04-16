@@ -59,7 +59,7 @@ pipeline {
     stage('Deply to Tomcat') {
       steps {
         deploy adapters: [tomcat9(credentialsId: 'TOMCAT', path: '', 
-        url: "params.TOMCAT_URL")], 
+        url: "${params.TOMCAT_URL}")], 
         contextPath: null, 
         war: 'target/*.war'
       }

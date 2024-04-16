@@ -7,6 +7,10 @@ pipeline {
     maven "Maven-3.9.6"
   }
 
+  environment {
+                ScannerHome = tool 'Sonar-5'
+  }
+
   stages {
     stage('Git Clone') {
       steps {

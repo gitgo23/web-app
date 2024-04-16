@@ -51,25 +51,15 @@ pipeline {
     }
 
     stage('Deploy to Nexus') {
-    steps {
-        nexusArtifactUploader(
-            artifacts: [
-                [
-                    artifactId: 'maven-web-application',
-                    classifier: '',
-                    file: 'target/web-app.war',
-                    type: 'war'
-                ]
-            ],
-            credentialsId: 'NEXUS_CRED',
-            groupId: 'com.mt',
-            nexusUrl: '54.197.131.35:8081',
-            nexusVersion: 'nexus3',
-            protocol: 'http',
-            repository: 'WebApp-Release',
-            version: '3.1.2-RELEASE'
-        )
+      steps {
+        nexusArtifactUploader artifacts: [[artifactId: 'maven-web-application', classifier: '', file: 'target/web-app.war', type: 'war']], credentialsId: 'NEXUS_CRED', groupId: 'com.mt', nexusUrl: '54.197.131.35:8081', nexusVersion: 'nexus3', protocol: 'http', repository: 'WebApp-Release', version: '3.1.2-RELEASE'
+      }
     }
+
+    stage('Deply to Tomcat') {
+      steps {
+        deploy adapters: [tomcat9(credentialsId: 'TOMCAT', path: '', url: 'http://54.157.246.139:8080/')], contextPath: null, war: 'target/*.war'
+      }
     }
 
   }

@@ -23,5 +23,19 @@ pipeline {
         sh"echo end of build"
       }
     }
+
+    stage('Code Analysis') {
+      steps {
+        script {
+          withSonarQubeEnv(credentialsId: 'SONAR-TK') {
+            sh '''
+            echo start of code scan
+            ${ScannerHome}/bin/sonar-scanner -Dsonar.projectKey=Jomacs_Webapp
+            echo end of code scan
+            '''
+          }
+        }
+      }
+    }
   }
 }

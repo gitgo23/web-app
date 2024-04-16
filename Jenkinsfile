@@ -15,7 +15,7 @@ pipeline {
     stage('Git Clone') {
       steps {
         sh "echo start of git clone"
-        git branch: 'main', url: 'https://github.com/gyenoch/web-app.git'
+        git branch: 'main', url: "${params.GIT_URL}"
         sh "echo end of git clone"
       }
     }

@@ -49,5 +49,28 @@ pipeline {
             }
         }
     }
+
+    stage('Deploy to Nexus') {
+    steps {
+        nexusArtifactUploader(
+            artifacts: [
+                [
+                    artifactId: 'maven-web-application',
+                    classifier: '',
+                    file: 'target/web-app.war',
+                    type: 'war'
+                ]
+            ],
+            credentialsId: 'NEXUS_CRED',
+            groupId: 'com.mt',
+            nexusUrl: '54.197.131.35:8081',
+            nexusVersion: 'nexus3',
+            protocol: 'http',
+            repository: 'WebApp-Release',
+            version: '3.1.2-RELEASE'
+        )
+    }
+    }
+
   }
 }

@@ -1,2 +1,3 @@
-FROM tomcat:8.0.20-jre8
-COPY target/*.war /usr/local/tomcat/webapps/cohort7.war
+FROM tomcat:9.0.87-jdk11
+COPY target/*.war /usr/local/tomcat/webapps
+EXPOSE 8080

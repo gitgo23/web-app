@@ -1,79 +1,43 @@
 pipeline {
-  agent {
-    label 'agent'
-  }
+    agent any
 
-  tools {
-    maven "Maven-3.9.6"
-  }
-
-  environment {
-                ScannerHome = tool 'Sonar-5'
-  }
-
-  stages {
-    stage('Git Clone') {
-      steps {
-        sh "echo start of git clone"
-        git branch: 'main', url: "${params.GIT_URL}"
-        sh "echo end of git clone"
-      }
+    tools {
+        maven 'Maven-3.9.6'
     }
 
-    stage('Maven Build') {
-      steps {
-        sh "echo start building from Maven"
-        sh "mvn clean package"
-        sh"echo end of build"
-      }
-    }
-
-    stage('Code Analysis') {
-      steps {
-        script {
-          withSonarQubeEnv(credentialsId: 'SONAR-TK') {
-            sh '''
-            echo start of code scan
-            ${ScannerHome}/bin/sonar-scanner -Dsonar.projectKey=Jomacs_Webapp
-            echo end of code scan
-            '''
-          }
+    stages {
+        stage('Git Checkout') {
+            steps {
+                git 'https://github.com/gyenoch/web-app.git'
+            }
         }
-      }
-    }
 
-    stage("Quality Gate") {
-        steps {
-            timeout(time: 1, unit: 'HOURS') {
-                waitForQualityGate abortPipeline: true
+        stage('Build with Maven') {
+            steps {
+                sh "mvn clean package"
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh "docker build -t gyenoch/web-app:latest ."
+            } 
+        }
+
+        stage('Docker Push') {
+            steps {
+                script {
+                    withDockerRegistry(credentialsId: 'Docker-cred') {
+                        sh "docker push gyenoch/web-app:latest"
+                    }
+                }
+            }
+        }
+
+        stage('Docker Run') {
+            steps {
+                sh "docker run -d -p 9090:8080 gyenoch/web-app:latest"
             }
         }
     }
-
-    stage('Deploy to Nexus') {
-      steps {
-        nexusArtifactUploader artifacts: [[artifactId: 'maven-web-application', 
-        classifier: '', 
-        file: 'target/web-app.war', 
-        type: 'war']], 
-        credentialsId: 'NEXUS_CRED', 
-        groupId: 'com.mt', 
-        nexusUrl: "${params.NEXUS_URL}", 
-        nexusVersion: 'nexus3', 
-        protocol: 'http', 
-        repository: 'WebApp-Release', 
-        version: "${params.NEXUS_VERSION}"
-      }
-    }
-
-    stage('Deply to Tomcat') {
-      steps {
-        deploy adapters: [tomcat9(credentialsId: 'TOMCAT', path: '', 
-        url: "${params.TOMCAT_URL}")], 
-        contextPath: null, 
-        war: 'target/*.war'
-      }
-    }
-
-  }
 }
